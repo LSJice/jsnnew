@@ -1531,6 +1531,24 @@ public class DepotHeadService {
         return depotHead;
     }
 
+    /**
+     * 对账用：按类型/供应商/时间段查询所有单据（不分页）
+     */
+    public List<DepotHeadVo4List> selectAllByCondition(String type, String subType, String status,
+                                                       String beginTime, String endTime, Long organId) {
+        List<DepotHeadVo4List> list = new ArrayList<>();
+        try {
+            String[] creatorArray = getCreatorArray();
+            String[] statusArray = StringUtil.isNotEmpty(status) ? status.split(",") : null;
+            list = depotHeadMapperEx.selectByConditionDepotHead(type, subType, creatorArray, null, null,
+                    statusArray, null, null, null, null, beginTime, endTime,
+                    null, organId, null, null, null, null, null, null, null);
+        } catch (Exception e) {
+            JshException.readFail(logger, e);
+        }
+        return list;
+    }
+
     public List<DepotHeadVo4List> debtList(Long organId, String materialParam, String number, String beginTime, String endTime,
                                            String status, Integer offset, Integer rows) {
         List<DepotHeadVo4List> resList = new ArrayList<>();
@@ -1962,5 +1980,12 @@ public class DepotHeadService {
         } catch (Exception e) {
             JshException.writeFail(logger, e);
         }
+    }
+
+    public void updateReconciliationStatus(Long depotHeadId, String reconciliationStatus) throws Exception {
+        DepotHead depotHead = new DepotHead();
+        depotHead.setId(depotHeadId);
+        depotHead.setReconciliationStatus(reconciliationStatus);
+        depotHeadMapper.updateByPrimaryKeySelective(depotHead);
     }
 }

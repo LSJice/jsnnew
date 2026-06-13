@@ -215,7 +215,7 @@
           offset: 1
         },
         // 默认索引
-        defDataIndex:['action','number','materialsList','operTimeStr','userName','materialCount','status'],
+        defDataIndex:['action','number','materialsList','operTimeStr','userName','materialCount','reconciliationStatus','status'],
         // 默认列
         defColumns: [
           {
@@ -230,6 +230,17 @@
           { title: '操作员', dataIndex: 'userName',width:120, ellipsis:true},
           { title: '数量', dataIndex: 'materialCount',width:80},
           { title: '备注', dataIndex: 'remark',width:250},
+          { title: '对账状态', dataIndex: 'reconciliationStatus', width: 100, align: 'center',
+            customRender: (text) => {
+              const map = {
+                '0': { color: 'black', text: '未对账' },
+                '1': { color: 'blue', text: '已对账' },
+                '2': { color: 'orange', text: '部分对账' }
+              }
+              const item = map[text] || map['0']
+              return <a-tag color={item.color}>{item.text}</a-tag>
+            }
+          },
           { title: '状态', dataIndex: 'status', width: 100, align: "center",
             scopedSlots: { customRender: 'customRenderStatus' }
           }

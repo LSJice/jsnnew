@@ -54,10 +54,6 @@ public class DepotHead {
 
     private BigDecimal deposit;
 
-    private BigDecimal debt;
-
-    private BigDecimal lastDebt;
-
     private String status;
 
     private String purchaseStatus;
@@ -71,6 +67,12 @@ public class DepotHead {
     private Long tenantId;
 
     private String deleteFlag;
+
+    private String reconciliationStatus;
+
+    private BigDecimal debt;
+
+    private BigDecimal lastDebt;
 
     public Long getId() {
         return id;
@@ -272,22 +274,6 @@ public class DepotHead {
         this.deposit = deposit;
     }
 
-    public BigDecimal getDebt() {
-        return debt;
-    }
-
-    public void setDebt(BigDecimal debt) {
-        this.debt = debt;
-    }
-
-    public BigDecimal getLastDebt() {
-        return lastDebt;
-    }
-
-    public void setLastDebt(BigDecimal lastDebt) {
-        this.lastDebt = lastDebt;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -342,5 +328,29 @@ public class DepotHead {
 
     public void setDeleteFlag(String deleteFlag) {
         this.deleteFlag = deleteFlag == null ? null : deleteFlag.trim();
+    }
+
+    public String getReconciliationStatus() {
+        return reconciliationStatus;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus == null ? null : reconciliationStatus.trim();
+    }
+
+    public BigDecimal getDebt() {
+        return debt;
+    }
+
+    public void setDebt(BigDecimal debt) {
+        this.debt = debt;
+    }
+
+    public BigDecimal getLastDebt() {
+        return lastDebt;
+    }
+
+    public void setLastDebt(BigDecimal lastDebt) {
+        this.lastDebt = lastDebt;
     }
 }

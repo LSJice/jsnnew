@@ -39,12 +39,10 @@
                   </a>
                 </a-col>
               </span>
-            </a-row>
-            <template v-if="toggleSearchStatus">
-              <a-row :gutter="24">
+              <template v-if="toggleSearchStatus">
                 <a-col :md="6" :sm="24">
                   <a-form-item label="仓库名称" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择仓库" showSearch allow-clear optionFilterProp="children" v-model="queryParam.depotId">
+                    <a-select placeholder="请选择仓库" showSearch optionFilterProp="children" v-model="queryParam.depotId">
                       <a-select-option v-for="(depot,index) in depotList" :value="depot.id" :key="index">
                         {{ depot.depotName }}
                       </a-select-option>
@@ -53,7 +51,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="操作员" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择操作员" showSearch allow-clear optionFilterProp="children" v-model="queryParam.creator">
+                    <a-select placeholder="请选择操作员" showSearch optionFilterProp="children" v-model="queryParam.creator">
                       <a-select-option v-for="(item,index) in userList" :key="index" :value="item.id">
                         {{ item.userName }}
                       </a-select-option>
@@ -62,7 +60,7 @@
                 </a-col>
                 <a-col :md="6" :sm="24">
                   <a-form-item label="单据状态" :labelCol="labelCol" :wrapperCol="wrapperCol">
-                    <a-select placeholder="请选择单据状态" allow-clear v-model="queryParam.status">
+                    <a-select placeholder="请选择单据状态" v-model="queryParam.status">
                       <a-select-option value="0">未审核</a-select-option>
                       <a-select-option value="9" v-if="!checkFlag">审核中</a-select-option>
                       <a-select-option value="1">已审核</a-select-option>
@@ -74,8 +72,8 @@
                     <a-input placeholder="请输入单据备注" v-model="queryParam.remark"></a-input>
                   </a-form-item>
                 </a-col>
-              </a-row>
-            </template>
+              </template>
+            </a-row>
           </a-form>
         </div>
         <!-- 操作按钮区域 -->
@@ -126,8 +124,6 @@
             :scroll="scroll"
             :loading="loading"
             :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
-            :expandedRowKeys="expandedRowKeys"
-            @expand="onExpand"
             @change="handleTableChange">
             <span slot="action" slot-scope="text, record">
               <a @click="myHandleDetail(record, '组装单', prefixNo)">查看</a>
@@ -145,17 +141,6 @@
               <a-tag v-if="status == '1'" color="green">已审核</a-tag>
               <a-tag v-if="status == '9'" color="orange">审核中</a-tag>
             </template>
-            <a-table
-              bordered
-              size="small"
-              slot="expandedRowRender"
-              slot-scope="record"
-              :loading="record.loading"
-              :columns="detailColumns"
-              :dataSource="record.childrens"
-              :row-key="record => record.id"
-              :pagination="false">
-            </a-table>
           </a-table>
         </div>
         <!-- table区域-end -->
@@ -201,7 +186,6 @@
           remark: ""
         },
         prefixNo: 'ZZD',
-        urlPath: '/bill/assemble',
         labelCol: {
           span: 5
         },
@@ -210,7 +194,7 @@
           offset: 1
         },
         // 默认索引
-        defDataIndex:['action','number','materialsList','operTimeStr','userName','materialCount','totalPrice','status'],
+        defDataIndex:['action','number','materialsList','operTimeStr','userName','materialCount','totalPrice','reconciliationStatus','status'],
         // 默认列
         defColumns: [
           {
@@ -226,6 +210,17 @@
           { title: '数量', dataIndex: 'materialCount',width:60},
           { title: '金额合计', dataIndex: 'totalPrice',width:80},
           { title: '备注', dataIndex: 'remark',width:200},
+          { title: '对账状态', dataIndex: 'reconciliationStatus', width: 100, align: 'center',
+            customRender: (text) => {
+              const map = {
+                '0': { color: 'default', text: '未对账' },
+                '1': { color: 'success', text: '已对账' },
+                '2': { color: 'warning', text: '部分对账' }
+              }
+              const item = map[text] || map['0']
+              return <a-tag color={item.color}>{item.text}</a-tag>
+            }
+          },
           { title: '状态', dataIndex: 'status', width: 80, align: "center",
             scopedSlots: { customRender: 'customRenderStatus' }
           }

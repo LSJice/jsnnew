@@ -271,7 +271,7 @@
         },
         // 默认索引
         defDataIndex:['action','organName','number','materialsList','operTimeStr','userName','materialCount','totalPrice','totalTaxLastMoney',
-          'changeAmount','status','purchaseStatus'],
+          'changeAmount','reconciliationStatus','status','purchaseStatus'],
         // 默认列
         defColumns: [
           {
@@ -307,6 +307,17 @@
           { title: '结算账户', dataIndex: 'accountName',width:80},
           { title: '收取订金', dataIndex: 'changeAmount',width:80},
           { title: '备注', dataIndex: 'remark',width:200},
+          { title: '对账状态', dataIndex: 'reconciliationStatus', width: 100, align: 'center',
+            customRender: (text) => {
+              const map = {
+                '0': { color: 'black', text: '未对账' },
+                '1': { color: 'blue', text: '已对账' },
+                '2': { color: 'orange', text: '部分对账' }
+              }
+              const item = map[text] || map['0']
+              return <a-tag color={item.color}>{item.text}</a-tag>
+            }
+          },
           { title: '采购进度', dataIndex: 'purchaseStatus', width: 80, align: "center",
             scopedSlots: { customRender: 'customRenderPurchaseStatus' }
           },

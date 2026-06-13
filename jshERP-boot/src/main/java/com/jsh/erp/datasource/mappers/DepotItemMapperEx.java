@@ -263,4 +263,16 @@ public interface DepotItemMapperEx {
             @Param("meId") Long meId,
             @Param("type") String type,
             @Param("subType") String subType);
+
+    /**
+     * 查询待对账的明细列表
+     */
+    List<DepotItem> selectItemsForReconciliation(
+        @Param("type") String type,
+        @Param("subType") String subType,
+        @Param("beginTime") String beginTime,
+        @Param("endTime") String endTime,
+        @Param("organId") Long organId,
+        @Param("purchaseStatus") String purchaseStatus
+    );
 }

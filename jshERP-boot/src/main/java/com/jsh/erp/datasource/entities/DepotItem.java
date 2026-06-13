@@ -54,6 +54,20 @@ public class DepotItem {
 
     private String deleteFlag;
 
+    private String reconciliationStatus;
+
+    private BigDecimal changeAmount;
+
+    // 扩展字段（对账预览用），不映射到数据库
+    private transient String materialName;
+    private transient String materialModel;
+    private transient String billNumber;
+    private transient String billType;
+    private transient String billSubType;
+    private transient String linkNumber;
+    private transient Date operTime;
+    private transient String billRemark;
+
     public Long getId() {
         return id;
     }
@@ -252,5 +266,85 @@ public class DepotItem {
 
     public void setDeleteFlag(String deleteFlag) {
         this.deleteFlag = deleteFlag == null ? null : deleteFlag.trim();
+    }
+
+    public String getReconciliationStatus() {
+        return reconciliationStatus;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus == null ? null : reconciliationStatus.trim();
+    }
+
+    public BigDecimal getChangeAmount() {
+        return changeAmount;
+    }
+
+    public void setChangeAmount(BigDecimal changeAmount) {
+        this.changeAmount = changeAmount;
+    }
+
+    public String getMaterialName() {
+        return materialName;
+    }
+
+    public void setMaterialName(String materialName) {
+        this.materialName = materialName;
+    }
+
+    public String getMaterialModel() {
+        return materialModel;
+    }
+
+    public void setMaterialModel(String materialModel) {
+        this.materialModel = materialModel;
+    }
+
+    public String getBillNumber() {
+        return billNumber;
+    }
+
+    public void setBillNumber(String billNumber) {
+        this.billNumber = billNumber;
+    }
+
+    public String getBillType() {
+        return billType;
+    }
+
+    public void setBillType(String billType) {
+        this.billType = billType;
+    }
+
+    public String getBillSubType() {
+        return billSubType;
+    }
+
+    public void setBillSubType(String billSubType) {
+        this.billSubType = billSubType;
+    }
+
+    public String getLinkNumber() {
+        return linkNumber;
+    }
+
+    public void setLinkNumber(String linkNumber) {
+        this.linkNumber = linkNumber;
+    }
+
+    public Date getOperTime() {
+        return operTime;
+    }
+
+    public void setOperTime(Date operTime) {
+        this.operTime = operTime;
+    }
+
+    public String getBillRemark() {
+        return billRemark;
+    }
+
+    public void setBillRemark(String billRemark) {
+        this.billRemark = billRemark;
     }
 }

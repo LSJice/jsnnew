@@ -2315,6 +2315,36 @@ public class DepotHeadExample {
             addCriterion("delete_flag not between", value1, value2, "deleteFlag");
             return (Criteria) this;
         }
+
+        public Criteria andReconciliationStatusIsNull() {
+            addCriterion("reconciliation_status is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusIsNotNull() {
+            addCriterion("reconciliation_status is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusEqualTo(String value) {
+            addCriterion("reconciliation_status =", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotEqualTo(String value) {
+            addCriterion("reconciliation_status <>", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusIn(List<String> values) {
+            addCriterion("reconciliation_status in", values, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotIn(List<String> values) {
+            addCriterion("reconciliation_status not in", values, "reconciliationStatus");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

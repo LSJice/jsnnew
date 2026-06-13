@@ -27,6 +27,7 @@
     <result column="link_id" jdbcType="BIGINT" property="linkId" />
     <result column="tenant_id" jdbcType="BIGINT" property="tenantId" />
     <result column="delete_flag" jdbcType="VARCHAR" property="deleteFlag" />
+    <result column="reconciliation_status" jdbcType="VARCHAR" property="reconciliationStatus" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -90,7 +91,7 @@
     id, header_id, material_id, material_extend_id, material_unit, sku, oper_number, 
     basic_number, unit_price, purchase_unit_price, tax_unit_price, all_price, remark, 
     depot_id, another_depot_id, tax_rate, tax_money, tax_last_money, material_type, sn_list, 
-    batch_number, expiration_date, link_id, tenant_id, delete_flag
+    batch_number, expiration_date, link_id, tenant_id, delete_flag, reconciliation_status
   </sql>
   <select id="selectByExample" parameterType="com.jsh.erp.datasource.entities.DepotItemExample" resultMap="BaseResultMap">
     select
@@ -493,6 +494,9 @@
       </if>
       <if test="deleteFlag != null">
         delete_flag = #{deleteFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="reconciliationStatus != null">
+        reconciliation_status = #{reconciliationStatus,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}

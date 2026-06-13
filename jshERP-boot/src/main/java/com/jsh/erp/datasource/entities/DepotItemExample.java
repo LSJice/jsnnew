@@ -1675,6 +1675,76 @@ public class DepotItemExample {
             addCriterion("delete_flag not between", value1, value2, "deleteFlag");
             return (Criteria) this;
         }
+
+        public Criteria andReconciliationStatusIsNull() {
+            addCriterion("reconciliation_status is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusIsNotNull() {
+            addCriterion("reconciliation_status is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusEqualTo(String value) {
+            addCriterion("reconciliation_status =", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotEqualTo(String value) {
+            addCriterion("reconciliation_status <>", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusGreaterThan(String value) {
+            addCriterion("reconciliation_status >", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusGreaterThanOrEqualTo(String value) {
+            addCriterion("reconciliation_status >=", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusLessThan(String value) {
+            addCriterion("reconciliation_status <", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusLessThanOrEqualTo(String value) {
+            addCriterion("reconciliation_status <=", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusLike(String value) {
+            addCriterion("reconciliation_status like", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotLike(String value) {
+            addCriterion("reconciliation_status not like", value, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusIn(List<String> values) {
+            addCriterion("reconciliation_status in", values, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotIn(List<String> values) {
+            addCriterion("reconciliation_status not in", values, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusBetween(String value1, String value2) {
+            addCriterion("reconciliation_status between", value1, value2, "reconciliationStatus");
+            return (Criteria) this;
+        }
+
+        public Criteria andReconciliationStatusNotBetween(String value1, String value2) {
+            addCriterion("reconciliation_status not between", value1, value2, "reconciliationStatus");
+            return (Criteria) this;
+        }
     }
 
     public static class Criteria extends GeneratedCriteria {

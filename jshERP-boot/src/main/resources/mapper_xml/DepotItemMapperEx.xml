@@ -1156,4 +1156,66 @@
         limit 0,1
     </select>
 
+    <!-- 查询待对账的明细列表 -->
+    <!-- 对账预览专用 ResultMap，包含扩展字段 -->
+    <resultMap id="ReconciliationResultMap" type="com.jsh.erp.datasource.entities.DepotItem" extends="com.jsh.erp.datasource.mappers.DepotItemMapper.BaseResultMap">
+        <result column="material_name" jdbcType="VARCHAR" property="materialName" />
+        <result column="material_model" jdbcType="VARCHAR" property="materialModel" />
+        <result column="bill_number" jdbcType="VARCHAR" property="billNumber" />
+        <result column="bill_type" jdbcType="VARCHAR" property="billType" />
+        <result column="bill_sub_type" jdbcType="VARCHAR" property="billSubType" />
+        <result column="link_number" jdbcType="VARCHAR" property="linkNumber" />
+        <result column="oper_time" jdbcType="TIMESTAMP" property="operTime" />
+        <result column="bill_remark" jdbcType="VARCHAR" property="billRemark" />
+    </resultMap>
+
+    <select id="selectItemsForReconciliation" resultMap="ReconciliationResultMap">
+        SELECT
+            d.id,
+            d.depot_id,
+            d.header_id,
+            d.material_id,
+            m.name AS material_name,
+            m.model AS material_model,
+            d.material_unit,
+            d.oper_number,
+            d.basic_number,
+            d.unit_price,
+            d.all_price,
+            d.reconciliation_status,
+            h.number AS bill_number,
+            h.type AS bill_type,
+            h.sub_type AS bill_sub_type,
+            h.link_number,
+            h.oper_time,
+            h.organ_id,
+            h.remark AS bill_remark,
+            0 AS change_amount
+        FROM jsh_depot_item d
+        LEFT JOIN jsh_material m ON m.tenant_id = d.tenant_id AND d.material_id = m.id
+        LEFT JOIN jsh_depot_head h ON h.tenant_id = d.tenant_id AND d.header_id = h.id
+        WHERE IFNULL(h.delete_flag, '0') != '1'
+        AND IFNULL(d.delete_flag, '0') != '1'
+        AND d.reconciliation_status != '1'
+        <if test="purchaseStatus != null and purchaseStatus != ''">
+            AND h.purchase_status = #{purchaseStatus}
+        </if>
+        <if test="type != null and type != ''">
+            AND h.type = #{type}
+        </if>
+        <if test="subType != null and subType != ''">
+            AND h.sub_type = #{subType}
+        </if>
+        <if test="organId != null">
+            AND h.organ_id = #{organId}
+        </if>
+        <if test="beginTime != null and beginTime != ''">
+            AND h.oper_time &gt;= #{beginTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND h.oper_time &lt;= #{endTime}
+        </if>
+        ORDER BY h.oper_time DESC, d.id
+    </select>
+
 </mapper>
