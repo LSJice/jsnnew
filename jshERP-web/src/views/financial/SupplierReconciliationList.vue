@@ -153,8 +153,8 @@ import { getFormatDate, getPrevMonthFormatDate } from '@/utils/util'
 import moment from 'moment'
 import SupplierReconciliationCreateModal from './modules/SupplierReconciliationCreateModal'
 import ReconciliationViewModal from './modules/ReconciliationViewModal'
-import XLSX from 'xlsx'
-import FileSaver from 'file-saver'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 export default {
   name: 'SupplierReconciliationList',
@@ -188,7 +188,7 @@ export default {
         { title: '对账单号', dataIndex: 'billNo', width: 150 },
         { title: '供应商名称', dataIndex: 'organName', width: 200 },
         { title: '对账区间', dataIndex: 'beginTime', width: 200,
-          customRender: (text, record) => (record.beginTime || '') + ' ~ ' + (record.endTime || '')
+          customRender: (text, record) => this.formatDate(record.beginTime) + ' ~ ' + this.formatDate(record.endTime)
         },
         { title: '合计金额', dataIndex: 'totalAmount', width: 120, align: 'right' },
         { title: '付款状态', dataIndex: 'isPaid', width: 100, scopedSlots: { customRender: 'paidSlot' } },
@@ -303,6 +303,13 @@ export default {
       const text = option.componentOptions.children[0].text
       return text.toLowerCase().indexOf(input.toLowerCase()) >= 0
     },
+    formatDate(value) {
+      return value ? moment(value).format('YYYY-MM-DD') : ''
+    },
+    exportWorkbook(wb, fileName) {
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      saveAs(new Blob([wbout], { type: 'application/octet-stream' }), fileName)
+    },
     handleExport() {
       this.loading = true
       let queryParams = this.getQueryParams()
@@ -310,32 +317,38 @@ export default {
       getAction(this.url.list, queryParams).then(res => {
         if (res && res.code === 200) {
           const exportData = []
-          res.data.rows.forEach(row => {
+          const rows = res.data && res.data.rows ? res.data.rows : []
+          rows.forEach(row => {
             exportData.push({
               '对账单号': row.billNo,
               '供应商名称': row.organName,
-              '对账开始日期': row.beginTime,
-              '对账结束日期': row.endTime,
+              '对账开始日期': this.formatDate(row.beginTime),
+              '对账结束日期': this.formatDate(row.endTime),
               '合计金额': row.totalAmount,
               '付款状态': row.isPaid === 1 ? '已付款' : '未付款',
-              '付款时间': row.payTime || '',
+              '付款时间': this.formatDate(row.payTime),
               '开票状态': row.isInvoiced === 1 ? '已开票' : '未开票',
               '发票号': row.invoiceCode || '',
-              '开票时间': row.invoiceTime || '',
+              '开票时间': this.formatDate(row.invoiceTime),
               '创建人': row.creatorName || '',
-              '创建时间': row.createTime || ''
+              '创建时间': this.formatDate(row.createTime)
             })
           })
           const ws = XLSX.utils.json_to_sheet(exportData)
           const wb = XLSX.utils.book_new()
           XLSX.utils.book_append_sheet(wb, ws, '对账单')
           try {
-            XLSX.writeFile(wb, '供应商对账单.xlsx')
+            this.exportWorkbook(wb, '供应商对账单.xlsx')
           } catch (e) {
             console.error('导出失败：', e)
             this.$message.error('导出失败：' + (e.message || '未知错误'))
           }
+        } else {
+          this.$message.error((res && res.data) || '导出失败')
         }
+      }).catch(e => {
+        console.error('导出失败：', e)
+        this.$message.error('导出失败：' + (e.message || '未知错误'))
       }).finally(() => { this.loading = false })
     },
     searchReset() {
