@@ -273,6 +273,7 @@ public interface DepotItemMapperEx {
         @Param("beginTime") String beginTime,
         @Param("endTime") String endTime,
         @Param("organId") Long organId,
-        @Param("purchaseStatus") String purchaseStatus
+        @Param("purchaseStatus") String purchaseStatus,
+        @Param("orderSubType") String orderSubType
     );
 }

@@ -1194,11 +1194,14 @@
         FROM jsh_depot_item d
         LEFT JOIN jsh_material m ON m.tenant_id = d.tenant_id AND d.material_id = m.id
         LEFT JOIN jsh_depot_head h ON h.tenant_id = d.tenant_id AND d.header_id = h.id
+        LEFT JOIN jsh_depot_head o ON o.tenant_id = h.tenant_id AND o.number = h.link_number
+            AND o.type = '其它' AND o.sub_type = #{orderSubType}
+            AND IFNULL(o.delete_flag, '0') != '1'
         WHERE IFNULL(h.delete_flag, '0') != '1'
         AND IFNULL(d.delete_flag, '0') != '1'
         AND d.reconciliation_status != '1'
         <if test="purchaseStatus != null and purchaseStatus != ''">
-            AND h.purchase_status = #{purchaseStatus}
+            AND o.purchase_status = #{purchaseStatus}
         </if>
         <if test="type != null and type != ''">
             AND h.type = #{type}

@@ -94,7 +94,7 @@
   import { findBySelectSup } from '@/api/api'
   import qs from 'qs'
   import { axios } from '@/utils/request'
-  import XLSX from 'xlsx'
+  import * as XLSX from 'xlsx'
   import FileSaver from 'file-saver'
 
   const VNodes = {
