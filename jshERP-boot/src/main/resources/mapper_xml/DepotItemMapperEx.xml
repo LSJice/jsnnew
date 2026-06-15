@@ -1199,9 +1199,9 @@
             AND IFNULL(o.delete_flag, '0') != '1'
         WHERE IFNULL(h.delete_flag, '0') != '1'
         AND IFNULL(d.delete_flag, '0') != '1'
-        AND d.reconciliation_status != '1'
+        AND IFNULL(d.reconciliation_status, '0') != '1'
         <if test="purchaseStatus != null and purchaseStatus != ''">
-            AND o.purchase_status = #{purchaseStatus}
+            AND o.status = #{purchaseStatus}
         </if>
         <if test="type != null and type != ''">
             AND h.type = #{type}

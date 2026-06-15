@@ -11,19 +11,19 @@
         <a-descriptions bordered size="small" :column="3">
           <a-descriptions-item label="对账单号">{{ head.billNo }}</a-descriptions-item>
           <a-descriptions-item label="供应商/客户">{{ head.organName }}</a-descriptions-item>
-          <a-descriptions-item label="对账区间">{{ head.beginTime }} ~ {{ head.endTime }}</a-descriptions-item>
+          <a-descriptions-item label="对账区间">{{ formatDate(head.beginTime) }} ~ {{ formatDate(head.endTime) }}</a-descriptions-item>
           <a-descriptions-item label="合计金额">{{ head.totalAmount }}</a-descriptions-item>
           <a-descriptions-item label="付款状态">
             <a-tag :color="head.isPaid === 1 ? 'green' : 'red'">{{ head.isPaid === 1 ? '已付款' : '未付款' }}</a-tag>
-            <span v-if="head.payTime">（付款时间：{{ head.payTime }}）</span>
+            <span v-if="head.payTime">（付款时间：{{ formatDate(head.payTime) }}）</span>
           </a-descriptions-item>
           <a-descriptions-item label="开票状态">
             <a-tag :color="head.isInvoiced === 1 ? 'green' : 'red'">{{ head.isInvoiced === 1 ? '已开票' : '未开票' }}</a-tag>
             <span v-if="head.invoiceCode">（发票号：{{ head.invoiceCode }}）</span>
-            <span v-if="head.invoiceTime">（开票时间：{{ head.invoiceTime }}）</span>
+            <span v-if="head.invoiceTime">（开票时间：{{ formatDate(head.invoiceTime) }}）</span>
           </a-descriptions-item>
           <a-descriptions-item label="创建人">{{ head.creatorName }}</a-descriptions-item>
-          <a-descriptions-item label="创建时间">{{ head.createTime }}</a-descriptions-item>
+          <a-descriptions-item label="创建时间">{{ formatDateTime(head.createTime) }}</a-descriptions-item>
           <a-descriptions-item label="备注">{{ head.remark || '-' }}</a-descriptions-item>
         </a-descriptions>
 
@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { getAction } from '@/api/manage'
+import { deleteAction, getAction } from '@/api/manage'
 import moment from 'moment'
 
 export default {
@@ -126,6 +126,12 @@ export default {
         }
       })
     },
+    formatDate(value) {
+      return value ? moment(value).format('YYYY-MM-DD') : ''
+    },
+    formatDateTime(value) {
+      return value ? moment(value).format('YYYY-MM-DD HH:mm:ss') : ''
+    },
     handleMarkPaid() {
       const that = this
       this.$confirm({
@@ -193,10 +199,7 @@ export default {
     },
     handleRemoveItem(itemId) {
       const that = this
-      const params = new URLSearchParams()
-      params.append('itemId', itemId)
-      const axios = that.$api ? that.$api.axios : that.axios
-      axios.delete('/reconciliation/removeItem', { params }).then(res => {
+      deleteAction('/reconciliation/removeItem', { itemId }).then(res => {
         if (res && res.code === 200) {
           that.$message.success('移除成功')
           that.items = that.items.filter(item => item.id !== itemId)

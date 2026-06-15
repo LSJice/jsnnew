@@ -194,7 +194,9 @@ export default {
         { title: '收款状态', dataIndex: 'isPaid', width: 100, scopedSlots: { customRender: 'paidSlot' } },
         { title: '开票状态', dataIndex: 'isInvoiced', width: 100, scopedSlots: { customRender: 'invoicedSlot' } },
         { title: '创建人', dataIndex: 'creatorName', width: 80 },
-        { title: '创建时间', dataIndex: 'createTime', width: 120 }
+        { title: '创建时间', dataIndex: 'createTime', width: 150,
+          customRender: (text) => this.formatDateTime(text)
+        }
       ],
       defDataIndex: ['action', 'billNo', 'organName', 'beginTime', 'totalAmount', 'isPaid', 'isInvoiced', 'creatorName', 'createTime'],
       url: {
@@ -306,6 +308,9 @@ export default {
     formatDate(value) {
       return value ? moment(value).format('YYYY-MM-DD') : ''
     },
+    formatDateTime(value) {
+      return value ? moment(value).format('YYYY-MM-DD HH:mm:ss') : ''
+    },
     exportWorkbook(wb, fileName) {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
       saveAs(new Blob([wbout], { type: 'application/octet-stream' }), fileName)
@@ -316,33 +321,54 @@ export default {
       queryParams.pageSize = 9999
       getAction(this.url.list, queryParams).then(res => {
         if (res && res.code === 200) {
-          const exportData = []
           const rows = res.data && res.data.rows ? res.data.rows : []
-          rows.forEach(row => {
-            exportData.push({
-              '对账单号': row.billNo,
-              '客户名称': row.organName,
-              '对账开始日期': this.formatDate(row.beginTime),
-              '对账结束日期': this.formatDate(row.endTime),
-              '合计金额': row.totalAmount,
-              '收款状态': row.isPaid === 1 ? '已收款' : '未收款',
-              '收款时间': this.formatDate(row.payTime),
-              '开票状态': row.isInvoiced === 1 ? '已开票' : '未开票',
-              '发票号': row.invoiceCode || '',
-              '开票时间': this.formatDate(row.invoiceTime),
-              '创建人': row.creatorName || '',
-              '创建时间': this.formatDate(row.createTime)
+          return Promise.all(rows.map(row => getAction('/reconciliation/item', { headId: row.id }).then(itemRes => ({
+            head: row,
+            items: itemRes && itemRes.code === 200 && itemRes.data ? itemRes.data.rows || [] : []
+          })))).then(exportRows => {
+            const exportData = []
+            const detailData = []
+            exportRows.forEach(({ head, items }) => {
+              exportData.push({
+                '对账单号': head.billNo,
+                '客户名称': head.organName,
+                '对账开始日期': this.formatDate(head.beginTime),
+                '对账结束日期': this.formatDate(head.endTime),
+                '合计金额': head.totalAmount,
+                '收款状态': head.isPaid === 1 ? '已收款' : '未收款',
+                '收款时间': this.formatDate(head.payTime),
+                '开票状态': head.isInvoiced === 1 ? '已开票' : '未开票',
+                '发票号': head.invoiceCode || '',
+                '开票时间': this.formatDate(head.invoiceTime),
+                '创建人': head.creatorName || '',
+                '创建时间': this.formatDateTime(head.createTime)
+              })
+              items.forEach(item => {
+                detailData.push({
+                  '对账单号': head.billNo,
+                  '客户名称': head.organName,
+                  '单号': item.billNumber || '',
+                  '商品名称': item.materialName || '',
+                  '规格型号': item.materialSpec || '',
+                  '单位': item.materialUnit || '',
+                  '数量': item.materialCount,
+                  '单价': item.materialPrice,
+                  '金额': item.materialAmount,
+                  '欠款': item.needDebt,
+                  '备注': item.remark || ''
+                })
+              })
             })
+            const wb = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData), '对账单')
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailData), '对账明细')
+            try {
+              this.exportWorkbook(wb, '客户对账单.xlsx')
+            } catch (e) {
+              console.error('导出失败：', e)
+              this.$message.error('导出失败：' + (e.message || '未知错误'))
+            }
           })
-          const ws = XLSX.utils.json_to_sheet(exportData)
-          const wb = XLSX.utils.book_new()
-          XLSX.utils.book_append_sheet(wb, ws, '对账单')
-          try {
-            this.exportWorkbook(wb, '客户对账单.xlsx')
-          } catch (e) {
-            console.error('导出失败：', e)
-            this.$message.error('导出失败：' + (e.message || '未知错误'))
-          }
         } else {
           this.$message.error((res && res.data) || '导出失败')
         }

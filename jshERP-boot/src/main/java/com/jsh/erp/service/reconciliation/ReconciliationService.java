@@ -124,9 +124,9 @@ public class ReconciliationService {
                 }
             }
         }
-        // 5. 回写 DepotHead 对账状态
+        // 5. 按明细实际状态回写 DepotHead 对账状态
         for (Long headId : headIdSet) {
-            depotHeadService.updateReconciliationStatus(headId, "1");
+            updateDepotHeadReconciliationStatus(headId);
         }
         return head.getId();
     }
@@ -211,19 +211,9 @@ public class ReconciliationService {
                 }
             }
         }
-        // 4. 回写 DepotHead 对账状态：检查每个 head 下是否还有已对账的明细
+        // 4. 按明细实际状态回写 DepotHead 对账状态
         for (Long headId : headIdSet) {
-            DepotItemExample example = new DepotItemExample();
-            example.createCriteria()
-                .andHeaderIdEqualTo(headId)
-                .andReconciliationStatusEqualTo("1")
-                .andDeleteFlagNotEqualTo("1");
-            long reconciledCount = depotItemMapper.countByExample(example);
-            if (reconciledCount > 0) {
-                depotHeadService.updateReconciliationStatus(headId, "2"); // 部分对账
-            } else {
-                depotHeadService.updateReconciliationStatus(headId, "0"); // 未对账
-            }
+            updateDepotHeadReconciliationStatus(headId);
         }
     }
 
@@ -255,19 +245,7 @@ public class ReconciliationService {
             if (depotItem != null) {
                 depotItem.setReconciliationStatus("0");
                 depotItemMapper.updateByPrimaryKeySelective(depotItem);
-                // 回写 DepotHead 状态
-                Long headId = depotItem.getHeaderId();
-                DepotItemExample example = new DepotItemExample();
-                example.createCriteria()
-                    .andHeaderIdEqualTo(headId)
-                    .andReconciliationStatusEqualTo("1")
-                    .andDeleteFlagNotEqualTo("1");
-                long reconciledCount = depotItemMapper.countByExample(example);
-                if (reconciledCount > 0) {
-                    depotHeadService.updateReconciliationStatus(headId, "2");
-                } else {
-                    depotHeadService.updateReconciliationStatus(headId, "0");
-                }
+                updateDepotHeadReconciliationStatus(depotItem.getHeaderId());
             }
         }
 
@@ -323,6 +301,97 @@ public class ReconciliationService {
             .andHeaderIdEqualTo(headId)
             .andDeleteFlagNotEqualTo("1");
         return reconciliationItemMapper.selectByExample(example);
+    }
+
+    private void updateDepotHeadReconciliationStatus(Long depotHeadId) throws Exception {
+        if (depotHeadId == null) {
+            return;
+        }
+        DepotItemExample totalExample = new DepotItemExample();
+        totalExample.createCriteria()
+            .andHeaderIdEqualTo(depotHeadId)
+            .andDeleteFlagNotEqualTo("1");
+        long totalCount = depotItemMapper.countByExample(totalExample);
+
+        DepotItemExample reconciledExample = new DepotItemExample();
+        reconciledExample.createCriteria()
+            .andHeaderIdEqualTo(depotHeadId)
+            .andReconciliationStatusEqualTo("1")
+            .andDeleteFlagNotEqualTo("1");
+        long reconciledCount = depotItemMapper.countByExample(reconciledExample);
+
+        String reconciliationStatus = getReconciliationStatus(totalCount, reconciledCount);
+        depotHeadService.updateReconciliationStatus(depotHeadId, reconciliationStatus);
+        updateLinkedOrderReconciliationStatus(depotHeadId);
+    }
+
+    private String getReconciliationStatus(long totalCount, long reconciledCount) {
+        if (totalCount <= 0 || reconciledCount <= 0) {
+            return "0";
+        }
+        if (reconciledCount >= totalCount) {
+            return "1";
+        }
+        return "2";
+    }
+
+    private void updateLinkedOrderReconciliationStatus(Long sourceHeadId) throws Exception {
+        DepotHead sourceHead = depotHeadMapper.selectByPrimaryKey(sourceHeadId);
+        if (sourceHead == null || sourceHead.getLinkNumber() == null || sourceHead.getLinkNumber().trim().isEmpty()) {
+            return;
+        }
+        String orderSubType = getLinkedOrderSubType(sourceHead);
+        if (orderSubType == null) {
+            return;
+        }
+        DepotHeadExample orderExample = new DepotHeadExample();
+        orderExample.createCriteria()
+            .andNumberEqualTo(sourceHead.getLinkNumber())
+            .andTypeEqualTo("其它")
+            .andSubTypeEqualTo(orderSubType)
+            .andDeleteFlagNotEqualTo("1");
+        List<DepotHead> orderHeads = depotHeadMapper.selectByExample(orderExample);
+        if (orderHeads == null || orderHeads.isEmpty()) {
+            return;
+        }
+
+        DepotHeadExample linkedExample = new DepotHeadExample();
+        linkedExample.createCriteria()
+            .andLinkNumberEqualTo(sourceHead.getLinkNumber())
+            .andTypeEqualTo(sourceHead.getType())
+            .andSubTypeEqualTo(sourceHead.getSubType())
+            .andDeleteFlagNotEqualTo("1");
+        List<DepotHead> linkedHeads = depotHeadMapper.selectByExample(linkedExample);
+        String orderStatus = getLinkedOrderStatus(linkedHeads);
+        for (DepotHead orderHead : orderHeads) {
+            depotHeadService.updateReconciliationStatus(orderHead.getId(), orderStatus);
+        }
+    }
+
+    private String getLinkedOrderSubType(DepotHead sourceHead) {
+        if ("入库".equals(sourceHead.getType()) && "采购".equals(sourceHead.getSubType())) {
+            return "采购订单";
+        }
+        if ("出库".equals(sourceHead.getType()) && "销售".equals(sourceHead.getSubType())) {
+            return "销售订单";
+        }
+        return null;
+    }
+
+    private String getLinkedOrderStatus(List<DepotHead> linkedHeads) {
+        if (linkedHeads == null || linkedHeads.isEmpty()) {
+            return "0";
+        }
+        long reconciledCount = 0;
+        for (DepotHead linkedHead : linkedHeads) {
+            if ("2".equals(linkedHead.getReconciliationStatus())) {
+                return "2";
+            }
+            if ("1".equals(linkedHead.getReconciliationStatus())) {
+                reconciledCount++;
+            }
+        }
+        return getReconciliationStatus(linkedHeads.size(), reconciledCount);
     }
 
     /**

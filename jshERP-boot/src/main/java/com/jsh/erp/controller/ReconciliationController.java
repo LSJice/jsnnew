@@ -104,21 +104,21 @@ public class ReconciliationController {
             beginTime = Tools.parseDayToTime(beginTime, BusinessConstants.DAY_FIRST_TIME);
             endTime = Tools.parseDayToTime(endTime, BusinessConstants.DAY_LAST_TIME);
 
-            // 订单状态过滤：前端值 → 关联订单的 purchaseStatus 值
+            // 订单状态过滤：前端值 → 关联订单的 status 值
             // 判断依据是入库/出库单据所关联的采购/销售订单（link_number）当前的交货状态
-            String purchaseStatus = null;
+            String orderStatus = null;
             if (statusFilter != null && !statusFilter.isEmpty()) {
                 switch (statusFilter) {
-                    case "done":    purchaseStatus = "2"; break;  // 已完全交货 → 订单完成采购/销售
-                    case "partial": purchaseStatus = "3"; break;  // 部分交货 → 订单部分采购/销售
-                    case "none":    purchaseStatus = "0"; break;  // 未交货 → 订单未采购/销售
-                    default:        purchaseStatus = null; break;
+                    case "done":    orderStatus = "2"; break;  // 已完全交货 → 订单完成采购/销售
+                    case "partial": orderStatus = "3"; break;  // 部分交货 → 订单部分采购/销售
+                    case "none":    orderStatus = "1"; break;  // 未交货 → 订单已审核但未采购/销售
+                    default:        orderStatus = null; break;
                 }
             }
 
             // 获取明细列表（过滤已对账的明细）
             List<DepotItem> items = depotItemMapperEx.selectItemsForReconciliation(
-                    type, subType, beginTime, endTime, organId, purchaseStatus, orderSubType);
+                    type, subType, beginTime, endTime, organId, orderStatus, orderSubType);
 
             // 从明细数据计算汇总
             BigDecimal periodAmount = BigDecimal.ZERO;
